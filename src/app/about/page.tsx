@@ -136,10 +136,10 @@ export default function About() {
 
                             <div className="lg:col-span-8 flex flex-col justify-center">
                                 <h2 className="text-3xl font-heading font-bold text-ffsm-primary-dark mb-1">Captain Rich Snyder</h2>
-                                <p className="text-ffsm-primary font-bold font-sans tracking-wide uppercase text-sm mb-8">Co-Owner & Fire Authority Validation Partner</p>
+                                <p className="text-ffsm-primary font-bold font-sans tracking-wide uppercase text-sm mb-8">Fire Authority Validation Partner</p>
                                 <div className="space-y-6 text-ffsm-ink font-sans leading-relaxed text-lg">
                                     <p>
-                                        <strong className="text-ffsm-primary-dark">As Co-Owner of Foothill FireSafe-Maintenance,</strong> Captain Rich Snyder brings decades of unparalleled, real-world firefighting experience to our mitigation strategies. His extensive background and years of dedicated service on the front lines are a cornerstone of our company, giving homeowners the highest level of trust in our assessments and execution.
+                                        <strong className="text-ffsm-primary-dark">Through a strategic collaboration with Foothill FireSafe-Maintenance,</strong> Captain Rich Snyder brings decades of unparalleled, real-world firefighting experience to our mitigation strategies. His extensive background and years of dedicated service on the front lines are a cornerstone of our company, giving homeowners the highest level of trust in our assessments and execution.
                                     </p>
                                     <p>
                                         A native to Southern California, Captain Snyder began his fire career in 1986 with the Sierra Madre Fire Department. In 1990, Rich became a career Fire Prevention Specialist and has served as the City’s Fire Marshal and Station Shift Captain since 1995.
