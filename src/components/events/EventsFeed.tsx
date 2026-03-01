@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { MapPin, Ticket } from 'lucide-react';
+import { APIProvider } from '@vis.gl/react-google-maps';
+import EventMap from './EventMap';
 
 interface EventPost {
     _id: string;
@@ -55,68 +57,70 @@ export function EventsFeed({ events }: { events: EventPost[] }) {
     const [featured, ...rest] = filtered;
 
     return (
-        <div>
-            {/* Search bar */}
-            <div className="mx-auto mb-10 max-w-2xl">
-                <div className="relative">
-                    <svg
-                        className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ffsm-gray-dark"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input
-                        type="search"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search upcoming events..."
-                        className="w-full rounded-sm border border-ffsm-gray/30 bg-white py-3.5 pl-12 pr-4 text-base text-ffsm-ink shadow-sm transition-shadow placeholder:text-ffsm-gray-dark focus:border-ffsm-primary focus:outline-none focus:ring-4 focus:ring-ffsm-primary-soft"
-                    />
+        <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
+            <div>
+                {/* Search bar */}
+                <div className="mx-auto mb-10 max-w-2xl">
+                    <div className="relative">
+                        <svg
+                            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ffsm-gray-dark"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                            type="search"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search upcoming events..."
+                            className="w-full rounded-sm border border-ffsm-gray/30 bg-white py-3.5 pl-12 pr-4 text-base text-ffsm-ink shadow-sm transition-shadow placeholder:text-ffsm-gray-dark focus:border-ffsm-primary focus:outline-none focus:ring-4 focus:ring-ffsm-primary-soft"
+                        />
+                    </div>
                 </div>
+
+                {filtered.length === 0 ? (
+                    <div className="rounded-sm border border-dashed border-ffsm-gray/50 bg-white p-12 text-center">
+                        {query ? (
+                            <>
+                                <p className="font-heading text-xl font-semibold text-ffsm-ink">
+                                    No events found for &ldquo;{query}&rdquo;
+                                </p>
+                                <p className="mt-2 text-ffsm-gray-dark">
+                                    Try a different search term or{' '}
+                                    <button
+                                        onClick={() => setQuery('')}
+                                        className="font-medium text-ffsm-primary underline hover:text-ffsm-primary-strong"
+                                    >
+                                        clear search
+                                    </button>
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <p className="font-heading text-xl font-semibold text-ffsm-ink">No upcoming events</p>
+                                <p className="mt-2 text-ffsm-gray-dark">Check back soon for workshops and community gatherings.</p>
+                            </>
+                        )}
+                    </div>
+                ) : (
+                    <>
+                        {/* Featured event (latest or next upcoming) */}
+                        {featured && <FeaturedEvent event={featured} />}
+
+                        {/* Rest of events in list layout */}
+                        {rest.length > 0 && (
+                            <div className="mt-12 space-y-0 divide-y divide-ffsm-gray/30">
+                                {rest.map((event) => (
+                                    <EventListItem key={event._id} event={event} />
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
-
-            {filtered.length === 0 ? (
-                <div className="rounded-sm border border-dashed border-ffsm-gray/50 bg-white p-12 text-center">
-                    {query ? (
-                        <>
-                            <p className="font-heading text-xl font-semibold text-ffsm-ink">
-                                No events found for &ldquo;{query}&rdquo;
-                            </p>
-                            <p className="mt-2 text-ffsm-gray-dark">
-                                Try a different search term or{' '}
-                                <button
-                                    onClick={() => setQuery('')}
-                                    className="font-medium text-ffsm-primary underline hover:text-ffsm-primary-strong"
-                                >
-                                    clear search
-                                </button>
-                            </p>
-                        </>
-                    ) : (
-                        <>
-                            <p className="font-heading text-xl font-semibold text-ffsm-ink">No upcoming events</p>
-                            <p className="mt-2 text-ffsm-gray-dark">Check back soon for workshops and community gatherings.</p>
-                        </>
-                    )}
-                </div>
-            ) : (
-                <>
-                    {/* Featured event (latest or next upcoming) */}
-                    {featured && <FeaturedEvent event={featured} />}
-
-                    {/* Rest of events in list layout */}
-                    {rest.length > 0 && (
-                        <div className="mt-12 space-y-0 divide-y divide-ffsm-gray/30">
-                            {rest.map((event) => (
-                                <EventListItem key={event._id} event={event} />
-                            ))}
-                        </div>
-                    )}
-                </>
-            )}
-        </div>
+        </APIProvider>
     );
 }
 
@@ -179,17 +183,7 @@ function FeaturedEventContent({ event }: { event: EventPost }) {
             </div>
 
             {event.address && (
-                <div className="mt-6 w-full h-48 overflow-hidden rounded-sm border border-ffsm-border bg-ffsm-surface">
-                    <iframe
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0 }}
-                        loading="lazy"
-                        allowFullScreen
-                        referrerPolicy="no-referrer-when-downgrade"
-                        src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyA_placeholder'}&q=${encodeURIComponent(event.address)}`}
-                    ></iframe>
-                </div>
+                <EventMap address={event.address} className="mt-6 w-full h-72" />
             )}
 
             <div className="mt-8 flex items-center justify-between border-t border-ffsm-gray/20 pt-6">
@@ -267,17 +261,7 @@ function EventListItem({ event }: { event: EventPost }) {
                 </p>
 
                 {event.address && (
-                    <div className="mt-5 w-full max-w-sm h-32 overflow-hidden rounded-sm border border-ffsm-border hidden md:block bg-ffsm-surface">
-                        <iframe
-                            width="100%"
-                            height="100%"
-                            style={{ border: 0 }}
-                            loading="lazy"
-                            allowFullScreen
-                            referrerPolicy="no-referrer-when-downgrade"
-                            src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyA_placeholder'}&q=${encodeURIComponent(event.address)}`}
-                        ></iframe>
-                    </div>
+                    <EventMap address={event.address} className="mt-5 w-full max-w-sm h-48 hidden md:block" />
                 )}
 
                 {/* Mobile Tickets Action */}
