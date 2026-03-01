@@ -23,8 +23,21 @@ export default function EventMap({ address, className }: EventMapProps) {
     useEffect(() => {
         if (!geocodingLibrary || !address) return;
 
+        let isMounted = true;
+
+        // Failsafe: If Google Maps silently drops or hangs on the request, force the error state
+        const failsafeTimeout = setTimeout(() => {
+            if (isMounted && !latLng) {
+                console.warn('Geocoding request timed out for:', address);
+                setError(true);
+            }
+        }, 6000);
+
         const geocoder = new geocodingLibrary.Geocoder();
         geocoder.geocode({ address }, (results, status) => {
+            if (!isMounted) return;
+            clearTimeout(failsafeTimeout);
+
             if (status === 'OK' && results && results[0]) {
                 const location = results[0].geometry.location;
                 setLatLng({
@@ -36,7 +49,12 @@ export default function EventMap({ address, className }: EventMapProps) {
                 setError(true);
             }
         });
-    }, [geocodingLibrary, address]);
+
+        return () => {
+            isMounted = false;
+            clearTimeout(failsafeTimeout);
+        };
+    }, [geocodingLibrary, address, latLng]);
 
     // Attempt to find a Street View panorama near the geocoded location
     useEffect(() => {
@@ -51,9 +69,10 @@ export default function EventMap({ address, className }: EventMapProps) {
 
     if (error) {
         return (
-            <div className={`flex flex-col items-center justify-center bg-ffsm-surface/50 border border-ffsm-border rounded-sm p-4 ${className}`}>
-                <MapPin className="h-6 w-6 text-ffsm-gray-dark mb-2 opacity-50" />
-                <span className="text-xs text-ffsm-gray-dark text-center">Interactive map unavailable for this location.</span>
+            <div className={`flex flex-col items-center justify-center bg-ffsm-surface border border-ffsm-border rounded-sm p-8 ${className}`}>
+                <MapPin className="h-8 w-8 text-ffsm-gray-dark mb-3 opacity-40" />
+                <span className="text-sm text-ffsm-ink font-semibold">Location Map Unavailable</span>
+                <span className="text-xs text-ffsm-gray-dark text-center mt-1">We couldn&apos;t pinpoint this exact address. Check the description for details.</span>
             </div>
         );
     }
